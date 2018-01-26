@@ -87,11 +87,11 @@ class SBESchema(object):
         definition['fields'] = fields
         definition['groups'] = groups
 
-    def _build_message_field(self, field_definition, offset, header_size=10, endian='<', add_header_size=True):
+    def _build_message_field(self, field_definition, offset, header_size=12, endian='<', add_header_size=True):
         field_original_name = field_definition['name']
         field_name = convert_to_underscore(field_original_name)
         field_id = field_definition['id']
-        field_description = field_definition['description']
+        field_description = field_definition.get('description','')
         field_type = self.type_map[field_definition['type']]
         field_type_type = field_type['type']
         field_semantic_type = field_definition.get('semantic_type', None)
@@ -147,8 +147,7 @@ class SBESchema(object):
                                              since_version=field_since_version)
         elif field_type_type == 'enum':
             encoding_type = field_type['encoding_type']
-            encoding_type_type = self.type_map[encoding_type]
-            primitive_type_fmt, primitive_type_size = self.primitive_type_map[encoding_type_type['primitive_type']]
+            primitive_type_fmt, primitive_type_size = self.primitive_type_map[encoding_type]
 
             field_offset = offset
             if field_definition.get('offset', None) is not None:
@@ -180,8 +179,7 @@ class SBESchema(object):
                                              since_version=field_since_version)
         elif field_type_type == 'set':
             encoding_type = field_type['encoding_type']
-            encoding_type_type = self.type_map[encoding_type]
-            primitive_type_fmt, primitive_type_size = self.primitive_type_map[encoding_type_type['primitive_type']]
+            primitive_type_fmt, primitive_type_size = self.primitive_type_map[encoding_type]
 
             field_offset = offset
             if field_definition.get('offset', None) is not None:
@@ -268,7 +266,7 @@ class SBESchema(object):
         # All messages start with a message size field
         message_id = int(message['id'])
         schema_block_length = int(message['block_length'])
-        message_type = type(message['description'], (SBEMessage,), {'message_id': message_id,
+        message_type = type(message['name'], (SBEMessage,), {'message_id': message_id,
                                                                     'schema_block_length': schema_block_length})
         self.message_map[message_id] = message_type
         setattr(message_type, 'fields', [])
@@ -276,7 +274,7 @@ class SBESchema(object):
         # All messages start with a message size field
         message_size_field = TypeMessageField(name='message_size', original_name='message_size',
                                               description="Header Message Size",
-                                              unpack_fmt='<H', field_offset=field_offset, field_length=2)
+                                              unpack_fmt='<H', field_offset=field_offset, field_length=4)
         field_offset += message_size_field.field_length
         message_type.fields.append(message_size_field)
         setattr(message_type, 'message_size', message_size_field)

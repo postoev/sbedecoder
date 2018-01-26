@@ -6,5 +6,5 @@ class SBEParser(object):
         msg_offset = offset
         while msg_offset < len(message_buffer):
             message = self.factory.build(message_buffer, msg_offset)
-            msg_offset += message.message_size.value
+            msg_offset += message.message_size.value + message.message_size.field_length
             yield message

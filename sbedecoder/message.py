@@ -131,7 +131,8 @@ class EnumMessageField(SBEMessageField):
         self.field_offset = field_offset
         self.enum_values = enum_values
         self.field_length = field_length
-        self.text_to_enum_description = dict((x['text'], x['description']) for x in enum_values)
+        #self.text_to_enum_description = dict((x['text'], x['description']) for x in enum_values)
+        self.text_to_enum_description = dict((x['text'], '') for x in enum_values)
         self.text_to_enumerant = dict((x['text'], x['name']) for x in enum_values) # shorter repr of value
         self.semantic_type = semantic_type
         self.since_version = since_version
@@ -343,7 +344,7 @@ class SBEMessageFactory(object):
 
     def build(self, msg_buffer, offset):
         # Peek at the template id to figure out what class to build
-        template_id = unpack_from('<H', msg_buffer, offset+4)[0]
+        template_id = unpack_from('<H', msg_buffer, offset+6)[0]
         message_type = self.schema.get_message_type(template_id)
         message = message_type()
         message.wrap(msg_buffer, offset)
